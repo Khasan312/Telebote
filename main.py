@@ -1,4 +1,5 @@
 import logging
+# from msilib.schema import File
 from aiogram import Bot, Dispatcher, executor, types
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import StatesGroup, State
@@ -15,6 +16,13 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 db = Database("database.db")
+
+
+file = open ('hedef.txt', encoding='utf-8')
+file.read()
+    
+
+
 
 
 class Form(StatesGroup):
@@ -123,30 +131,61 @@ async def bot_message(message: types.Message):
             await bot.send_message(message.from_user.id, date_birth)
             await bot.send_message(message.from_user.id, position)
 
+        elif message.text == "💻Меню":
+            await bot.send_message(message.from_user.id, 'Добро пожаловать {0.first_name}'.format(message.from_user),
+                                   reply_markup=nav.OtherMenu)
+            keyboard1 = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+            btnPurpose = types.KeyboardButton('🎯 Цели')
+            btnInfo = types.KeyboardButton('📑 Информация')
+            keyboard1.add(btnPurpose, btnInfo)
+
+        elif message.text == '📑 Информация':
+            await bot.send_message(message.from_user.id, 'Задача ментора — помочь человеку решить некую проблему и поделиться не столько знаниями, сколько опытом. Проблемы могут быть разного характера. Действительно, может случиться так, что человек хочет попасть на новую работу и не знает, с чего начать.')
+        
+        elif message.text == '🎯 Цели':
+            await bot.send_message(message.from_user.id, 'Перееехать в Америку и стать Мувером')
+
+        elif message.text == 'Главное меню':
+            await bot.send_message(message.from_user.id, 'Главное меню', reply_markup=nav.mainMenu)
+
         else:
-                if db.get_signup(message.from_user.id) == "setnickname":
-                    if len(message.text) > 15:
-                        await bot.send_message(
-                            message.from_user.id,
-                            "никнэйм не должен превышать 15 символов и больше 2 символов",
-                        )
-                    elif "@" in message.text or "/" in message.text:
-                        await bot.send_message(
-                            message.from_user.id, "вы ввели запрещенный символ"
-                        )
-                    else:
-                        # db.set_nickname(message.from_user.id, message.text)
-                        # db.set_date_of_birth(message.from_user.id, message.text)
-                        db.set_signup(message.from_user.id, "Готово")
-                        await bot.send_message(
-                            message.from_user.id,
-                            "Регистрация прошла успешно",
-                            reply_markup=nav.mainMenu,
-                        )
-                else:
-                    await bot.send_message(message.from_user.id, "Что?")
+            await message.reply('dont understanded')
+    else:
+        if db.get_signup(message.from_user.id) == "setnickname":
+            if len(message.text) > 15:
+                await bot.send_message(
+                    message.from_user.id,
+                    "никнэйм не должен превышать 15 символов и больше 2 символов",
+                )
+            elif "@" in message.text or "/" in message.text:
+                await bot.send_message(
+                    message.from_user.id, "вы ввели запрещенный символ"
+                )
+            else:
+                # db.set_nickname(message.from_user.id, message.text)
+                # db.set_date_of_birth(message.from_user.id, message.text)
+                db.set_signup(message.from_user.id, "Готово")
+                await bot.send_message(
+                    message.from_user.id,
+                    "Регистрация прошла успешно",
+                    reply_markup=nav.mainMenu,
+                )
+
+                    # keyboard = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+
+@dp.callback_query_handler(lambda call: call.data == 'btnInfo')
+async def choose(callback_query: types.CallbackQuery):
+    await bot.answer_callback_query(callback_query.id)
+    print(callback_query)
+    # await db.add()
+    await bot.send_message(callback_query.from_user.id, 'fahfgwjahgfjawgw')
 
 
+    
+
+                            
+                    
+        
 
 if __name__ == "__main__":
     executor.start_polling(dp, skip_updates=True)
