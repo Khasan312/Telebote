@@ -20,6 +20,14 @@ OtherMenu = ReplyKeyboardMarkup(resize_keyboard= True).add(btnInfo, btnPurpose, 
 
 
 
+#inline
+btnUrlChannel = InlineKeyboardButton(text='Подписаться', url='https://t.me/nurafromsaturan')
+btnDonesub = InlineKeyboardButton(text='Подписался', callback_data='subchanneldone')
+
+
+checkSubMenu = InlineKeyboardMarkup(row_width=1)
+checkSubMenu.insert(btnUrlChannel)
+checkSubMenu.insert(btnDonesub)
 
 
 

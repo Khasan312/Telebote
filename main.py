@@ -1,3 +1,4 @@
+from email import message
 import logging
 # from msilib.schema import File
 from aiogram import Bot, Dispatcher, executor, types
@@ -7,7 +8,11 @@ import markups as nav
 from markups import *
 from db import Database
 
+
+
 TOKEN = "5203636918:AAEDMv7gz3cfkN37s1CAZ8PfGE6kyZQ8rBc"
+CHANNEL_ID = '@nurafromsaturan'
+NOT_SUB_MESSAGE = 'ДЛЯ доступа к боту подпишитесь на канал'
 
 logging.basicConfig(level=logging.INFO)
 
@@ -31,25 +36,46 @@ class Form(StatesGroup):
     position = State()
 
 
+def check_sub_channel(chat_member):
+    print(chat_member['status'])
+    if chat_member['status'] != 'left':
+        return True
+    else:
+        return False
+
+
 @dp.message_handler(commands=["start", "help"])
 async def start(message: types.Message):
+    if message.chat.type =='private':
     # check the exists of the user in the db
-    if not db.user_exists(message.from_user.id):
-        db.add_user(message.from_user.id)
-        await bot.send_message(
-            message.from_user.id, "Hi!\nI'm Makers!\nPowered by aiogram."
-        )
-        await bot.send_message(message.from_user.id, "Укажите ваш ник")
-        await Form.nickname.set()
-        
+        if check_sub_channel(await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=message.from_user.id)):
+                await bot.send_message(message.from_user.id, 'Privet')
+                if not db.user_exists(message.from_user.id):
+                    db.add_user(message.from_user.id)
+                    await bot.send_message(
+                        message.from_user.id, "Hi!\nI'm Makers!\nPowered by aiogram."
+                    )
+                    await bot.send_message(message.from_user.id, "Укажите ваш ник")
+                    await Form.nickname.set()
+                    
 
+                else:
+                    await bot.send_message(
+                        message.from_user.id,
+                        "Вы уже зарегистрированы",
+                        reply_markup=nav.mainMenu,
+                    )
+        else:
+            await bot.send_message(message.from_user.id, NOT_SUB_MESSAGE, reply_markup=nav.checkSubMenu)
+
+
+@dp.callback_query_handler(text='subchanneldone')
+async def subchanneldone(message: types.Message):
+    await bot.delete_message(message.from_user.id, message.message.message_id)
+    if check_sub_channel(await bot.get_chat_member(chat_id=CHANNEL_ID, user_id=message.from_user.id)):
+        await bot.send_message(message.from_user.id, 'Privet')
     else:
-        await bot.send_message(
-            message.from_user.id,
-            "Вы уже зарегистрированы",
-            reply_markup=nav.mainMenu,
-        )
-
+        await bot.send_message(message.from_user.id, NOT_SUB_MESSAGE, reply_markup=nav.checkSubMenu)
 
     
 
